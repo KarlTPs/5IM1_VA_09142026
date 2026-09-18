@@ -13,8 +13,8 @@ public class JFrameImagen extends JFrame {
 
         setTitle(titulo);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setResizable(true);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setResizable(false);
         setSize(e.getIconWidth(), e.getIconHeight());
 
         setVisible(true);
