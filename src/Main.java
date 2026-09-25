@@ -92,5 +92,66 @@ void main() {
 
     Image imagenModificada4 = HerramientasImagen.toImage(bufferedImageAumentoTemp);
     JFrameImagen jFrameImagen4 = new JFrameImagen(imagenModificada4, "Aumento de temperatura");
+
+    BufferedImage bufferedImage5 = HerramientasImagen.toBufferedImage(imagen);
+
+    int[] histogramaR = new int[256];
+    int[] histogramaG = new int[256];
+    int[] histogramaB = new int[256];
+
+    for (int i = 0; i < bufferedImage5.getWidth(); i++) {
+        for (int j = 0; j < bufferedImage5.getHeight(); j++) {
+            int pixel = bufferedImage5.getRGB(i, j);
+            int r = (pixel >> 16) & 0xFF;
+            int g = (pixel >> 8)  & 0xFF;
+            int b =  pixel        & 0xFF;
+            histogramaR[r]++;
+            histogramaG[g]++;
+            histogramaB[b]++;
+        }
+    }
+
+    Image imagenHistogramaR = generarImagenHistograma(histogramaR, new Color(255, 0, 0), "Rojo");
+    JFrameImagen jFrameImagenHistogramaR = new JFrameImagen(imagenHistogramaR, "Histograma R");
+
+    Image imagenHistogramaG = generarImagenHistograma(histogramaG, new Color(0, 255, 0), "Verde");
+    JFrameImagen jFrameImagenHistogramaG = new JFrameImagen(imagenHistogramaG, "Histograma G");
+
+    Image imagenHistogramaB = generarImagenHistograma(histogramaB, new Color(0, 0, 255), "Azul");
+    JFrameImagen jFrameImagenHistogramaB = new JFrameImagen(imagenHistogramaB, "Histograma B");
+}
+
+public static Image generarImagenHistograma(int[] histograma, Color color, String titulo) {
+    int anchoGrafica  = 256;   // 256 valores posibles
+    int altoGrafica   = 300;   // altura fija
+
+    // Crear imagen en blanco (fondo blanco)
+    BufferedImage imagenHist = new BufferedImage(anchoGrafica, altoGrafica, BufferedImage.TYPE_INT_RGB);
+
+    Color blanco = Color.WHITE;
+    for (int i = 0; i < anchoGrafica; i++) {
+        for (int j = 0; j < altoGrafica; j++) {
+            imagenHist.setRGB(i, j, blanco.getRGB());
+        }
+    }
+
+    int maxFrecuencia = 0;
+    for (int i = 0; i < 256; i++) {
+        if (histograma[i] > maxFrecuencia) {
+            maxFrecuencia = histograma[i];
+        }
+    }
+
+    if (maxFrecuencia == 0) maxFrecuencia = 1;
+
+    for (int x = 0; x < 256; x++) {
+        int alturaBarra = (int) (((double) histograma[x] / maxFrecuencia) * (altoGrafica - 1));
+        for (int y = 0; y < alturaBarra; y++) {
+            int posY = (altoGrafica - 1) - y;
+            imagenHist.setRGB(x, posY, color.getRGB());
+        }
+    }
+
+    return HerramientasImagen.toImage(imagenHist);
 }
 
