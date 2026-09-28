@@ -84,8 +84,6 @@ void main() {
 
             colorImagenAum = (rAum << 16) | (gAum << 8) | bAum;
 
-
-
             bufferedImageAumentoTemp.setRGB(i, j, colorImagenAum);
         }
     }
@@ -122,8 +120,8 @@ void main() {
 }
 
 public static Image generarImagenHistograma(int[] histograma, Color color, String titulo) {
-    int anchoGrafica  = 256;   // 256 valores posibles
-    int altoGrafica   = 300;   // altura fija
+    int anchoGrafica  = 512;   // 256 valores posibles
+    int altoGrafica   = 550;   // altura fija
 
     // Crear imagen en blanco (fondo blanco)
     BufferedImage imagenHist = new BufferedImage(anchoGrafica, altoGrafica, BufferedImage.TYPE_INT_RGB);
@@ -144,11 +142,12 @@ public static Image generarImagenHistograma(int[] histograma, Color color, Strin
 
     if (maxFrecuencia == 0) maxFrecuencia = 1;
 
-    for (int x = 0; x < 256; x++) {
-        int alturaBarra = (int) (((double) histograma[x] / maxFrecuencia) * (altoGrafica - 1));
+    for (int x = 0; x < 512; x = x + 2) {
+        int alturaBarra = (int) (((double) histograma[x/2] / maxFrecuencia) * (altoGrafica - 1));
         for (int y = 0; y < alturaBarra; y++) {
             int posY = (altoGrafica - 1) - y;
             imagenHist.setRGB(x, posY, color.getRGB());
+            imagenHist.setRGB(x + 1, posY, color.getRGB());
         }
     }
 
