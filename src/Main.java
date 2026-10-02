@@ -12,8 +12,19 @@ void main() {
     Image imagen = HerramientasImagen.abrirImagen();
     JFrameImagen jFrameImagen = new JFrameImagen(imagen, "Imagen");
 
-    /* Para hacer un recuadro verde limon y una bandera */
+    // generarCuadroVerdeLimonYBandera(imagen);
 
+    // generarImagenRoja(imagen);
+
+    // generarImagenAumentoTemperatura(imagen);
+
+    // generarHistogramas(imagen);
+
+    Image imagenGris = convertirEscalaGrises(imagen);
+    generarHistogramasGris(imagenGris);
+}
+
+public static void generarCuadroVerdeLimonYBandera(Image imagen) {
     BufferedImage bufferedImage1 = HerramientasImagen.toBufferedImage(imagen);
     BufferedImage bufferedImage2 = HerramientasImagen.toBufferedImage(imagen);
     Color verdeLimon = new Color(137, 243, 54);
@@ -54,9 +65,9 @@ void main() {
 
     Image imagenModificada2 = HerramientasImagen.toImage(bufferedImage2);
     JFrameImagen jFrameImagen2 = new JFrameImagen(imagenModificada2, "Imagen Bandera");
+}
 
-    /* Para cambiar a rojo todo */
-
+public static void generarImagenRoja(Image imagen) {
     BufferedImage bufferedImage3 = HerramientasImagen.toBufferedImage(imagen);
     for(int i = 0; i < bufferedImage3.getWidth(); i++) {
         for (int j = 0; j < bufferedImage3.getHeight(); j++) {
@@ -66,11 +77,10 @@ void main() {
 
     Image imagenModificada3 = HerramientasImagen.toImage(bufferedImage3);
     JFrameImagen jFrameImagen3 = new JFrameImagen(imagenModificada3, "Imagen Roja");
+}
 
-    /* Para subir o reducir temperatura (aumentar/disminuir 50 en rojo y contrario en azul) */
-
+public static void generarImagenAumentoTemperatura(Image imagen) {
     BufferedImage bufferedImageAumentoTemp = HerramientasImagen.toBufferedImage(imagen);
-    BufferedImage bufferedImageDisminuirTemp = HerramientasImagen.toBufferedImage(imagen);
     int colorImagenAum, rAum, gAum, bAum;
     for(int i = 0; i < bufferedImageAumentoTemp.getWidth(); i++) {
         for (int j = 0; j < bufferedImageAumentoTemp.getHeight(); j++) {
@@ -84,15 +94,15 @@ void main() {
 
             colorImagenAum = (rAum << 16) | (gAum << 8) | bAum;
 
-
-
             bufferedImageAumentoTemp.setRGB(i, j, colorImagenAum);
         }
     }
 
     Image imagenModificada4 = HerramientasImagen.toImage(bufferedImageAumentoTemp);
     JFrameImagen jFrameImagen4 = new JFrameImagen(imagenModificada4, "Aumento de temperatura");
+}
 
+public static void generarHistogramas(Image imagen) {
     BufferedImage bufferedImage5 = HerramientasImagen.toBufferedImage(imagen);
 
     int[] histogramaR = new int[256];
@@ -119,6 +129,57 @@ void main() {
 
     Image imagenHistogramaB = generarImagenHistograma(histogramaB, new Color(0, 0, 255), "Azul");
     JFrameImagen jFrameImagenHistogramaB = new JFrameImagen(imagenHistogramaB, "Histograma B");
+}
+
+public static Image generarImagenHistogramaGris(int[] histograma, Color color, String titulo) {
+    int anchoGrafica  = 256;   // 256 valores posibles
+    int altoGrafica   = 300;   // altura fija
+
+    // Crear imagen en blanco (fondo blanco)
+    BufferedImage imagenHist = new BufferedImage(anchoGrafica, altoGrafica, BufferedImage.TYPE_BYTE_GRAY);
+
+    Color blanco = Color.WHITE;
+    for (int i = 0; i < anchoGrafica; i++) {
+        for (int j = 0; j < altoGrafica; j++) {
+            imagenHist.setRGB(i, j, blanco.getRGB());
+        }
+    }
+
+    int maxFrecuencia = 0;
+    for (int i = 0; i < 256; i++) {
+        if (histograma[i] > maxFrecuencia) {
+            maxFrecuencia = histograma[i];
+        }
+    }
+
+    if (maxFrecuencia == 0) maxFrecuencia = 1;
+
+    for (int x = 0; x < 256; x++) {
+        int alturaBarra = (int) (((double) histograma[x] / maxFrecuencia) * (altoGrafica - 1));
+        for (int y = 0; y < alturaBarra; y++) {
+            int posY = (altoGrafica - 1) - y;
+            imagenHist.setRGB(x, posY, color.getRGB());
+        }
+    }
+
+    return HerramientasImagen.toImage(imagenHist);
+}
+
+public static void generarHistogramasGris(Image imagen) {
+    BufferedImage bufferedImage5 = HerramientasImagen.toBufferedImage(imagen);
+
+    int[] histograma = new int[256];
+
+    for (int i = 0; i < bufferedImage5.getWidth(); i++) {
+        for (int j = 0; j < bufferedImage5.getHeight(); j++) {
+            int pixel = bufferedImage5.getRGB(i, j);
+            int gris =  pixel        & 0xFF;
+            histograma[gris]++;
+        }
+    }
+
+    Image imagenHistogramaR = generarImagenHistograma(histograma, new Color(100, 100, 100), "Rojo");
+    JFrameImagen jFrameImagenHistogramaR = new JFrameImagen(imagenHistogramaR, "Histograma R");
 }
 
 public static Image generarImagenHistograma(int[] histograma, Color color, String titulo) {
@@ -155,3 +216,27 @@ public static Image generarImagenHistograma(int[] histograma, Color color, Strin
     return HerramientasImagen.toImage(imagenHist);
 }
 
+public static Image convertirEscalaGrises(Image image) {
+    BufferedImage bufferedImage = HerramientasImagen.toBufferedImage(image);
+    BufferedImage bufferedImageGray = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+    int colorImagen, r, g, b, gray;
+
+    for(int i = 0; i < bufferedImage.getWidth(); i++) {
+        for (int j = 0; j < bufferedImage.getHeight(); j++) {
+            colorImagen = bufferedImage.getRGB(i, j);
+            r = (colorImagen >> 16) & 0xFF;
+            g = (colorImagen >> 8) & 0xFF;
+            b = (colorImagen) & 0xFF;
+
+            gray = Math.round((float) (r + g + b) / 3);
+            int argb = (0xFF << 24) | (gray << 16) | (gray << 8) | gray;
+            bufferedImageGray.setRGB(i, j, argb);
+        }
+    }
+
+    Image imagenGris = HerramientasImagen.toImage(bufferedImageGray);
+
+    JFrameImagen jFrameImagen = new JFrameImagen(imagenGris, "Imagen Gris");
+
+    return imagenGris;
+}
