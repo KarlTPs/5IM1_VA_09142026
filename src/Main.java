@@ -23,11 +23,15 @@ void main() {
     // Image imagenGris = convertirEscalaGrises(imagen);
     // generarHistogramasGris(imagenGris);
 
-    BufferedImage bufferedImage = HerramientasImagen.toBufferedImage(imagen);
-    run(bufferedImage);
-    Image imagen2 = HerramientasImagen.toImage(bufferedImage);
-    JFrameImagen jFrameImagen2 = new JFrameImagen(imagen2, "Imagen 2");
-    generarHistogramas(imagen2);
+    //BufferedImage bufferedImage = HerramientasImagen.toBufferedImage(imagen);
+    //run(bufferedImage);
+    //Image imagen2 = HerramientasImagen.toImage(bufferedImage);
+    //JFrameImagen jFrameImagen2 = new JFrameImagen(imagen2, "Imagen 2");
+    //generarHistogramas(imagen2);
+
+    Image imagenContraste = aumentarContraste(imagen, 2);
+
+    generarHistogramas(imagenContraste);
 }
 
 public static void generarCuadroVerdeLimonYBandera(Image imagen) {
@@ -259,4 +263,40 @@ public static void run(BufferedImage ip) {
             ip.setRGB(u, v, b);
         }
     }
+}
+
+public static Image aumentarContraste(Image imagen, double factor) {
+    BufferedImage bufferedImage = HerramientasImagen.toBufferedImage(imagen);
+
+    int colorOriginal, r, g, b;
+    int rNuevo, gNuevo, bNuevo;
+    int puntoMedio = 128;
+
+    for (int i = 0; i < bufferedImage.getWidth(); i++) {
+        for (int j = 0; j < bufferedImage.getHeight(); j++) {
+            colorOriginal = bufferedImage.getRGB(i, j);
+
+            r = (colorOriginal >> 16) & 0xFF;
+            g = (colorOriginal >> 8)  & 0xFF;
+            b =  colorOriginal        & 0xFF;
+
+            // Aplicar fórmula de contraste
+            rNuevo = (int) (factor * (r - puntoMedio) + puntoMedio);
+            gNuevo = (int) (factor * (g - puntoMedio) + puntoMedio);
+            bNuevo = (int) (factor * (b - puntoMedio) + puntoMedio);
+
+            // Saturar al rango [0, 255]
+            rNuevo = Math.max(0, Math.min(255, rNuevo));
+            gNuevo = Math.max(0, Math.min(255, gNuevo));
+            bNuevo = Math.max(0, Math.min(255, bNuevo));
+
+            int nuevoColor = (0xFF << 24) | (rNuevo << 16) | (gNuevo << 8) | bNuevo;
+            bufferedImage.setRGB(i, j, nuevoColor);
+        }
+    }
+
+    Image imagenModificada = HerramientasImagen.toImage(bufferedImage);
+    JFrameImagen jFrame = new JFrameImagen(imagenModificada, "Imagen con Contraste x" + factor);
+
+    return imagenModificada;
 }
