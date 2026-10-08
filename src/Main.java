@@ -18,10 +18,10 @@ void main() {
 
     // generarImagenAumentoTemperatura(imagen);
 
-    generarHistogramas(imagen);
+    // generarHistogramas(imagen);
 
-    // Image imagenGris = convertirEscalaGrises(imagen);
-    // generarHistogramasGris(imagenGris);
+    Image imagenGris = convertirEscalaGrises(imagen);
+    generarHistogramasGris(imagenGris);
 
     //BufferedImage bufferedImage = HerramientasImagen.toBufferedImage(imagen);
     //run(bufferedImage);
@@ -29,9 +29,11 @@ void main() {
     //JFrameImagen jFrameImagen2 = new JFrameImagen(imagen2, "Imagen 2");
     //generarHistogramas(imagen2);
 
-    Image imagenContraste = aumentarContraste(imagen, 2);
+    Image imagenContraste = aumentarContraste(imagen, 1.5);
+    //generarHistogramas(imagenContraste);
 
-    generarHistogramas(imagenContraste);
+    Image imagenGrisContraste = convertirEscalaGrises(imagenContraste);
+    generarHistogramasGris(imagenGrisContraste);
 }
 
 public static void generarCuadroVerdeLimonYBandera(Image imagen) {
