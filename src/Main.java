@@ -18,10 +18,16 @@ void main() {
 
     // generarImagenAumentoTemperatura(imagen);
 
-    // generarHistogramas(imagen);
+    generarHistogramas(imagen);
 
-    Image imagenGris = convertirEscalaGrises(imagen);
-    generarHistogramasGris(imagenGris);
+    // Image imagenGris = convertirEscalaGrises(imagen);
+    // generarHistogramasGris(imagenGris);
+
+    BufferedImage bufferedImage = HerramientasImagen.toBufferedImage(imagen);
+    run(bufferedImage);
+    Image imagen2 = HerramientasImagen.toImage(bufferedImage);
+    JFrameImagen jFrameImagen2 = new JFrameImagen(imagen2, "Imagen 2");
+    generarHistogramas(imagen2);
 }
 
 public static void generarCuadroVerdeLimonYBandera(Image imagen) {
@@ -240,4 +246,17 @@ public static Image convertirEscalaGrises(Image image) {
     JFrameImagen jFrameImagen = new JFrameImagen(imagenGris, "Imagen Gris");
 
     return imagenGris;
+}
+
+public static void run(BufferedImage ip) {
+    int w = ip.getWidth();
+    int h = ip.getHeight();
+
+    for (int v = 0; v < h; v++) {
+        for (int u = 0; u < w; u++) {
+            int a = ip.getRGB(u,v);
+            int b = (int) Math.min((a * 1.5 + 0.5), 255);
+            ip.setRGB(u, v, b);
+        }
+    }
 }
