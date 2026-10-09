@@ -20,8 +20,8 @@ void main() {
 
     // generarHistogramas(imagen);
 
-    Image imagenGris = convertirEscalaGrises(imagen);
-    generarHistogramasGris(imagenGris);
+    //Image imagenGris = convertirEscalaGrises(imagen);
+    //generarHistogramasGris(imagenGris);
 
     //BufferedImage bufferedImage = HerramientasImagen.toBufferedImage(imagen);
     //run(bufferedImage);
@@ -29,11 +29,21 @@ void main() {
     //JFrameImagen jFrameImagen2 = new JFrameImagen(imagen2, "Imagen 2");
     //generarHistogramas(imagen2);
 
-    Image imagenContraste = aumentarContraste(imagen, 1.5);
+    //Image imagenContraste = aumentarContraste(imagen, 1.5);
     //generarHistogramas(imagenContraste);
 
-    Image imagenGrisContraste = convertirEscalaGrises(imagenContraste);
-    generarHistogramasGris(imagenGrisContraste);
+    //Image imagenGrisContraste = convertirEscalaGrises(imagenContraste);
+    //generarHistogramasGris(imagenGrisContraste);
+
+    Image imagenBinaria = binarizar(imagen, 125);
+
+    /*Image imagenCuadrado = generarCuadrado(400, 400, 100, 100, 200);
+    Image imagenCirculo = generarCirculo(400, 400, 120, 200, 200);
+
+    notImage(imagenCirculo);
+    orImagenes(imagenCirculo, imagenCuadrado);
+    andImagenes(imagenCirculo, imagenCuadrado);
+    xorImagenes(imagenCirculo, imagenCuadrado);*/
 }
 
 public static void generarCuadroVerdeLimonYBandera(Image imagen) {
@@ -301,4 +311,208 @@ public static Image aumentarContraste(Image imagen, double factor) {
     JFrameImagen jFrame = new JFrameImagen(imagenModificada, "Imagen con Contraste x" + factor);
 
     return imagenModificada;
+}
+
+public static Image binarizar(Image imagen, int umbral) {
+    BufferedImage bufferedImage = HerramientasImagen.toBufferedImage(imagen);
+    BufferedImage bufferedImageBin = new BufferedImage(
+            bufferedImage.getWidth(),
+            bufferedImage.getHeight(),
+            BufferedImage.TYPE_BYTE_BINARY);
+
+    int colorOriginal, r, g, b, gris;
+    Color negro = new Color(0, 0, 0);
+    Color blanco = new Color(255, 255, 255);
+
+    for (int i = 0; i < bufferedImage.getWidth(); i++) {
+        for (int j = 0; j < bufferedImage.getHeight(); j++) {
+            colorOriginal = bufferedImage.getRGB(i, j);
+
+            r = (colorOriginal >> 16) & 0xFF;
+            g = (colorOriginal >> 8)  & 0xFF;
+            b =  colorOriginal        & 0xFF;
+
+            gris = (r + g + b) / 3;
+
+            if (gris >= umbral) {
+                bufferedImageBin.setRGB(i, j, blanco.getRGB());
+            } else {
+                bufferedImageBin.setRGB(i, j, negro.getRGB());
+            }
+        }
+    }
+
+    Image imagenBin = HerramientasImagen.toImage(bufferedImageBin);
+    JFrameImagen jFrame = new JFrameImagen(imagenBin, "Imagen Binarizada (umbral=" + umbral + ")");
+
+    return imagenBin;
+}
+
+public static Image generarCirculo(int ancho, int alto, int radio, int centroX, int centroY) {
+    BufferedImage bufferedImage = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+
+    Color negro = new Color(0, 0, 0);
+    Color blanco = new Color(255, 255, 255);
+
+    for (int i = 0; i < ancho; i++) {
+        for (int j = 0; j < alto; j++) {
+            double distancia = Math.sqrt(Math.pow(i - centroX, 2) + Math.pow(j - centroY, 2));
+
+            if (distancia <= radio) {
+                bufferedImage.setRGB(i, j, blanco.getRGB());
+            } else {
+                bufferedImage.setRGB(i, j, negro.getRGB());
+            }
+        }
+    }
+
+    Image imagenCirculo = HerramientasImagen.toImage(bufferedImage);
+    JFrameImagen jFrame = new JFrameImagen(imagenCirculo, "Círculo");
+
+    return imagenCirculo;
+}
+
+public static Image generarCuadrado(int ancho, int alto, int xInicio, int yInicio, int lado) {
+    BufferedImage bufferedImage = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+
+    Color negro = new Color(0, 0, 0);
+    Color blanco = new Color(255, 255, 255);
+
+    for (int i = 0; i < ancho; i++) {
+        for (int j = 0; j < alto; j++) {
+            if (i >= xInicio && i < xInicio + lado &&
+                    j >= yInicio && j < yInicio + lado) {
+                bufferedImage.setRGB(i, j, blanco.getRGB());
+            } else {
+                bufferedImage.setRGB(i, j, negro.getRGB());
+            }
+        }
+    }
+
+    Image imagenCuadrado = HerramientasImagen.toImage(bufferedImage);
+    JFrameImagen jFrame = new JFrameImagen(imagenCuadrado, "Cuadrado");
+
+    return imagenCuadrado;
+}
+
+public static Image andImagenes(Image image1, Image image2) {
+    BufferedImage bufferedImage1 = HerramientasImagen.toBufferedImage(image1);
+    BufferedImage bufferedImage2 = HerramientasImagen.toBufferedImage(image2);
+
+    int height1 = bufferedImage1.getHeight();
+    int width1 = bufferedImage1.getWidth();
+    int height2 = bufferedImage2.getHeight();
+    int width2 = bufferedImage2.getWidth();
+
+    // requiere que sean de mismo tamaño
+    if(height1 != height2 || width1 != width2)
+        return null;
+
+    BufferedImage bufferedImageOp = new BufferedImage(width1, height1, BufferedImage.TYPE_INT_RGB);
+
+    Color negro = new Color(0, 0, 0);
+    Color blanco = new Color(255, 255, 255);
+
+    for(int i = 0; i < width1; i++) {
+        for(int j = 0; j < height1; j++) {
+            if(bufferedImage1.getRGB(i, j) == blanco.getRGB() && bufferedImage2.getRGB(i,j) == blanco.getRGB())
+                bufferedImageOp.setRGB(i, j, blanco.getRGB());
+            else
+                bufferedImageOp.setRGB(i, j, negro.getRGB());
+        }
+    }
+
+    Image imageOp = HerramientasImagen.toImage(bufferedImageOp);
+    JFrameImagen jFrameImagen = new JFrameImagen(imageOp, "AND");
+
+    return imageOp;
+}
+
+public static Image orImagenes(Image image1, Image image2) {
+    BufferedImage bufferedImage1 = HerramientasImagen.toBufferedImage(image1);
+    BufferedImage bufferedImage2 = HerramientasImagen.toBufferedImage(image2);
+
+    int height1 = bufferedImage1.getHeight();
+    int width1 = bufferedImage1.getWidth();
+    int height2 = bufferedImage2.getHeight();
+    int width2 = bufferedImage2.getWidth();
+
+    // requiere que sean de mismo tamaño
+    if(height1 != height2 || width1 != width2)
+        return null;
+
+    BufferedImage bufferedImageOp = new BufferedImage(width1, height1, BufferedImage.TYPE_INT_RGB);
+
+    Color negro = new Color(0, 0, 0);
+    Color blanco = new Color(255, 255, 255);
+
+    for(int i = 0; i < width1; i++) {
+        for(int j = 0; j < height1; j++) {
+            if(bufferedImage1.getRGB(i, j) == blanco.getRGB() || bufferedImage2.getRGB(i,j) == blanco.getRGB())
+                bufferedImageOp.setRGB(i, j, blanco.getRGB());
+            else
+                bufferedImageOp.setRGB(i, j, negro.getRGB());
+        }
+    }
+
+    Image imageOp = HerramientasImagen.toImage(bufferedImageOp);
+    JFrameImagen jFrameImagen = new JFrameImagen(imageOp, "OR");
+
+    return imageOp;
+}
+
+public static Image xorImagenes(Image image1, Image image2) {
+    BufferedImage bufferedImage1 = HerramientasImagen.toBufferedImage(image1);
+    BufferedImage bufferedImage2 = HerramientasImagen.toBufferedImage(image2);
+
+    int height1 = bufferedImage1.getHeight();
+    int width1 = bufferedImage1.getWidth();
+    int height2 = bufferedImage2.getHeight();
+    int width2 = bufferedImage2.getWidth();
+
+    // requiere que sean de mismo tamaño
+    if(height1 != height2 || width1 != width2)
+        return null;
+
+    BufferedImage bufferedImageOp = new BufferedImage(width1, height1, BufferedImage.TYPE_INT_RGB);
+
+    Color negro = new Color(0, 0, 0);
+    Color blanco = new Color(255, 255, 255);
+
+    for(int i = 0; i < width1; i++) {
+        for(int j = 0; j < height1; j++) {
+            if(bufferedImage1.getRGB(i, j) == blanco.getRGB() && bufferedImage2.getRGB(i,j) == blanco.getRGB())
+                bufferedImageOp.setRGB(i, j, negro.getRGB());
+            else if(bufferedImage1.getRGB(i, j) == blanco.getRGB() || bufferedImage2.getRGB(i,j) == blanco.getRGB())
+                bufferedImageOp.setRGB(i, j, blanco.getRGB());
+            else
+                bufferedImage1.setRGB(i, j, negro.getRGB());
+        }
+    }
+
+    Image imageOp = HerramientasImagen.toImage(bufferedImageOp);
+    JFrameImagen jFrameImagen = new JFrameImagen(imageOp, "XOR");
+
+    return imageOp;
+}
+
+public static Image notImage(Image image1) {
+    BufferedImage bufferedImage1 = HerramientasImagen.toBufferedImage(image1);
+
+    Color blanco = new Color(255, 255, 255);
+    Color negro = new Color(0, 0, 0);
+
+    for(int i = 0; i < bufferedImage1.getWidth(); i++) {
+        for(int j = 0; j < bufferedImage1.getHeight(); j++) {
+            if(bufferedImage1.getRGB(i, j) == blanco.getRGB())
+                bufferedImage1.setRGB(i, j, negro.getRGB());
+            else
+                bufferedImage1.setRGB(i, j, blanco.getRGB());
+        }
+    }
+
+    Image notImage = HerramientasImagen.toImage(bufferedImage1);
+    JFrameImagen jFrameImagen = new JFrameImagen(notImage, "NOT");
+
+    return notImage;
 }
