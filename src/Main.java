@@ -20,22 +20,22 @@ void main() {
 
     // generarHistogramas(imagen);
 
-    //Image imagenGris = convertirEscalaGrises(imagen);
-    //generarHistogramasGris(imagenGris);
+    /*Image imagenGris = convertirEscalaGrises(imagen);
+    generarHistogramasGris(imagenGris);*/
 
-    //BufferedImage bufferedImage = HerramientasImagen.toBufferedImage(imagen);
-    //run(bufferedImage);
-    //Image imagen2 = HerramientasImagen.toImage(bufferedImage);
-    //JFrameImagen jFrameImagen2 = new JFrameImagen(imagen2, "Imagen 2");
-    //generarHistogramas(imagen2);
+    /*BufferedImage bufferedImage = HerramientasImagen.toBufferedImage(imagen);
+    run(bufferedImage);
+    Image imagen2 = HerramientasImagen.toImage(bufferedImage);
+    JFrameImagen jFrameImagen2 = new JFrameImagen(imagen2, "Imagen 2");
+    generarHistogramas(imagen2);*/
 
-    //Image imagenContraste = aumentarContraste(imagen, 1.5);
-    //generarHistogramas(imagenContraste);
+    /*Image imagenContraste = aumentarContraste(imagen, 1.5);
+    generarHistogramas(imagenContraste);*/
 
-    //Image imagenGrisContraste = convertirEscalaGrises(imagenContraste);
-    //generarHistogramasGris(imagenGrisContraste);
+    /*Image imagenGrisContraste = convertirEscalaGrises(imagenContraste);
+    generarHistogramasGris(imagenGrisContraste);*/
 
-    Image imagenBinaria = binarizar(imagen, 125);
+    //Image imagenBinaria = binarizar(imagen, 125);
 
     /*Image imagenCuadrado = generarCuadrado(400, 400, 100, 100, 200);
     Image imagenCirculo = generarCirculo(400, 400, 120, 200, 200);
@@ -44,6 +44,10 @@ void main() {
     orImagenes(imagenCirculo, imagenCuadrado);
     andImagenes(imagenCirculo, imagenCuadrado);
     xorImagenes(imagenCirculo, imagenCuadrado);*/
+
+    trasladar(imagen, 50, 30);
+    escalar(imagen, 2.0, 2.0);
+    rotarSimple(imagen, 45);
 }
 
 public static void generarCuadroVerdeLimonYBandera(Image imagen) {
@@ -298,9 +302,9 @@ public static Image aumentarContraste(Image imagen, double factor) {
             bNuevo = (int) (factor * (b - puntoMedio) + puntoMedio);
 
             // Saturar al rango [0, 255]
-            rNuevo = Math.max(0, Math.min(255, rNuevo));
-            gNuevo = Math.max(0, Math.min(255, gNuevo));
-            bNuevo = Math.max(0, Math.min(255, bNuevo));
+            rNuevo = Math.clamp(rNuevo, 0, 255);
+            gNuevo = Math.clamp(gNuevo, 0, 255);
+            bNuevo = Math.clamp(bNuevo, 0, 255);
 
             int nuevoColor = (0xFF << 24) | (rNuevo << 16) | (gNuevo << 8) | bNuevo;
             bufferedImage.setRGB(i, j, nuevoColor);
@@ -515,4 +519,103 @@ public static Image notImage(Image image1) {
     JFrameImagen jFrameImagen = new JFrameImagen(notImage, "NOT");
 
     return notImage;
+}
+
+public static Image trasladar(Image imagen, int dx, int dy) {
+    BufferedImage origen = HerramientasImagen.toBufferedImage(imagen);
+
+    int ancho = origen.getWidth();
+    int alto  = origen.getHeight();
+
+    BufferedImage destino = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+    Color negro = new Color(0, 0, 0);
+
+    for (int x = 0; x < ancho; x++) {
+        for (int y = 0; y < alto; y++) {
+            int xOrigen = x - dx;
+            int yOrigen = y - dy;
+
+            // Si cae dentro de la imagen original, copiamos; si no, fondo negro
+            if (xOrigen >= 0 && xOrigen < ancho &&
+                    yOrigen >= 0 && yOrigen < alto) {
+                destino.setRGB(x, y, origen.getRGB(xOrigen, yOrigen));
+            } else {
+                destino.setRGB(x, y, negro.getRGB());
+            }
+        }
+    }
+
+    Image imagenDestino = HerramientasImagen.toImage(destino);
+    new JFrameImagen(imagenDestino, "Traslación (" + dx + ", " + dy + ")");
+
+    return imagenDestino;
+}
+
+public static Image escalar(Image imagen, double sx, double sy) {
+    BufferedImage origen = HerramientasImagen.toBufferedImage(imagen);
+
+    int anchoOrig = origen.getWidth();
+    int altoOrig  = origen.getHeight();
+
+    int anchoDest = (int) (anchoOrig * sx);
+    int altoDest  = (int) (altoOrig  * sy);
+
+    BufferedImage destino = new BufferedImage(anchoDest, altoDest, BufferedImage.TYPE_INT_RGB);
+    Color negro = new Color(0, 0, 0);
+
+    for (int x = 0; x < anchoDest; x++) {
+        for (int y = 0; y < altoDest; y++) {
+            // Transformación inversa: ¿de qué píxel original viene este?
+            int xOrigen = (int) (x / sx);
+            int yOrigen = (int) (y / sy);
+
+            if (xOrigen >= 0 && xOrigen < anchoOrig &&
+                    yOrigen >= 0 && yOrigen < altoOrig) {
+                destino.setRGB(x, y, origen.getRGB(xOrigen, yOrigen));
+            } else {
+                destino.setRGB(x, y, negro.getRGB());
+            }
+        }
+    }
+
+    Image imagenDestino = HerramientasImagen.toImage(destino);
+    new JFrameImagen(imagenDestino, "Escalamiento (" + sx + "x, " + sy + "x)");
+
+    return imagenDestino;
+}
+
+public static Image rotarSimple(Image imagen, double grados) {
+    BufferedImage origen = HerramientasImagen.toBufferedImage(imagen);
+
+    int ancho = origen.getWidth();
+    int alto  = origen.getHeight();
+
+    double rad = Math.toRadians(grados);
+    double cos = Math.cos(rad);
+    double sin = Math.sin(rad);
+
+    BufferedImage destino = new BufferedImage(ancho, alto, BufferedImage.TYPE_INT_RGB);
+    Color negro = new Color(0, 0, 0);
+
+    for (int x = 0; x < ancho; x++) {
+        for (int y = 0; y < alto; y++) {
+            // Transformación inversa con origen en (0,0)
+            double xOrigen =  x * cos + y * sin;
+            double yOrigen = -x * sin + y * cos;
+
+            int xi = (int) Math.round(xOrigen);
+            int yi = (int) Math.round(yOrigen);
+
+            if (xi >= 0 && xi < ancho && yi >= 0 && yi < alto) {
+                destino.setRGB(x, y, origen.getRGB(xi, yi));
+            } else {
+                destino.setRGB(x, y, negro.getRGB());
+            }
+        }
+    }
+
+    Image imagenDestino = HerramientasImagen.toImage(destino);
+    new JFrameImagen(imagenDestino, "Rotación simple " + grados + "°");
+
+    return imagenDestino;
 }
